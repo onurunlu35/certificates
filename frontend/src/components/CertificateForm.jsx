@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from "./ui/button";
-import axios from 'axios';
-
-const API_URL = 'http://localhost:5001/api';
+import { supabase } from '../lib/supabaseClient';
 
 const CertificateForm = ({ onSubmitSuccess, editData = null }) => {
   const [formData, setFormData] = useState({
@@ -20,8 +18,19 @@ const CertificateForm = ({ onSubmitSuccess, editData = null }) => {
     try {
       if (editData) {
         console.log('Updating certificate:', editData.id, formData);
-        await axios.put(`${API_URL}/certificates/public/${editData.id}`, formData);
-        console.log('Certificate updated successfully');
+        const { error } = await supabase
+          .from('certificates')
+          .update({
+            issuer: formData.issuer,
+            at_location: formData.at_location,
+            on_date: formData.on_date,
+            last_annual: formData.last_annual,
+            expiry_date: formData.expiry_date,
+            certificate_no: formData.certificate_no
+          })
+          .eq('id', editData.id);
+
+        if (error) throw error;
       }
       onSubmitSuccess();
     } catch (error) {
