@@ -1,36 +1,19 @@
-import React, { useState } from 'react';
-import CertificateTable from './components/CertificateTable';
-import TagExtractor from './components/TagExtractor';
-import { Button } from "./components/ui/button";
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
 
 function App() {
-  const [activeTab, setActiveTab] = useState('certificates');
-
   return (
-    <div className="container mx-auto py-8 px-4">
-      {/* Tabs */}
-      <div className="flex space-x-2 mb-6">
-        <Button 
-          variant={activeTab === 'certificates' ? 'default' : 'outline'}
-          onClick={() => setActiveTab('certificates')}
-        >
-          Certificates
-        </Button>
-        <Button 
-          variant={activeTab === 'extractor' ? 'default' : 'outline'}
-          onClick={() => setActiveTab('extractor')}
-        >
-          Tag Extractor
-        </Button>
-      </div>
-
-      {/* Tab Content */}
-      {activeTab === 'certificates' ? (
-        <CertificateTable />
-      ) : (
-        <TagExtractor />
-      )}
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/" element={<Navigate to="/login" />} />
+      </Routes>
+    </Router>
   );
 }
 

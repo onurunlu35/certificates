@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { supabase } from '../lib/supabaseClient';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 import { Button } from "./ui/button";
 import { FileIcon, Edit } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import CertificateForm from './CertificateForm';
-
-const API_URL = 'http://localhost:5001/api';
 
 const CertificateTable = () => {
   const [certificates, setCertificates] = useState([]);
@@ -20,13 +18,20 @@ const CertificateTable = () => {
 
   const fetchCertificates = async () => {
     try {
-      console.log('Fetching certificates...');
-      const response = await axios.get(`${API_URL}/certificates/public`);
-      console.log('Received certificates:', response.data);
-      setCertificates(response.data);
-    } catch (err) {
-      console.error('Error fetching certificates:', err);
-      setError(err.message);
+      const { data, error } = await supabase
+        .from('certificates')
+        .select('*')
+        .order('type');
+
+      if (error) {
+        throw error;
+      }
+
+      console.log('Fetched certificates:', data);
+      setCertificates(data || []);
+    } catch (error) {
+      console.error('Error fetching certificates:', error);
+      setError('Error: Network Error');
     }
   };
 
@@ -49,7 +54,7 @@ const CertificateTable = () => {
 
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          Error: {error}
+          {error}
         </div>
       )}
 
