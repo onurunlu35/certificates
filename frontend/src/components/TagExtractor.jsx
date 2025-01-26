@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import { supabase } from '../lib/supabaseClient';
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-
-const API_URL = 'http://localhost:5001/api';
+import { Card } from "./ui/card";
 
 const TagExtractor = () => {
   const [tag, setTag] = useState('');
@@ -19,12 +17,15 @@ const TagExtractor = () => {
     }
 
     try {
-      const response = await axios.get(`${API_URL}/certificates/public`);
-      const certificates = response.data;
+      const { data, error } = await supabase
+        .from('certificates')
+        .select('*');
+
+      if (error) throw error;
 
       // Tüm sertifikaları tara ve etiket değerini bul
       let found = false;
-      for (const cert of certificates) {
+      for (const cert of data) {
         // Tüm tag alanlarını kontrol et
         if (cert.issuer_tag === tag) {
           setResult({ value: cert.issuer, type: cert.type });
@@ -80,44 +81,41 @@ const TagExtractor = () => {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <Card>
-        <CardHeader>
-          <CardTitle>Tag Extractor</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            {/* Input Area */}
-            <div className="flex space-x-4">
-              <div className="flex-1">
-                <Input
-                  type="text"
-                  value={tag}
-                  onChange={(e) => setTag(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Enter tag (e.g., c11, c23)"
-                  className="w-full"
-                />
-              </div>
-              <Button onClick={handleExtract}>
-                Extract
-              </Button>
+      <Card className="p-6">
+        <h2 className="text-xl font-semibold mb-6">Tag Extractor</h2>
+        
+        <div className="space-y-6">
+          {/* Input Area */}
+          <div className="flex space-x-4">
+            <div className="flex-1">
+              <Input
+                type="text"
+                value={tag}
+                onChange={(e) => setTag(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Enter tag (e.g., c11, c23)"
+                className="w-full"
+              />
             </div>
-
-            {/* Result Area */}
-            {error && (
-              <div className="p-4 bg-red-50 text-red-600 rounded">
-                {error}
-              </div>
-            )}
-            
-            {result && (
-              <div className="p-4 bg-green-50 rounded">
-                <div className="font-medium">Found in: {result.type}</div>
-                <div className="mt-2">Value: {result.value}</div>
-              </div>
-            )}
+            <Button onClick={handleExtract}>
+              Extract
+            </Button>
           </div>
-        </CardContent>
+
+          {/* Result Area */}
+          {error && (
+            <div className="p-4 bg-red-50 text-red-600 rounded">
+              {error}
+            </div>
+          )}
+          
+          {result && (
+            <div className="p-4 bg-green-50 rounded">
+              <div className="font-medium">Found in: {result.type}</div>
+              <div className="mt-2">Value: {result.value}</div>
+            </div>
+          )}
+        </div>
       </Card>
     </div>
   );
